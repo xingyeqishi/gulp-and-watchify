@@ -1,0 +1,5 @@
+{
+    "workspace": "/Users/sun/workspace/mtcrm/src/main/webapp/mobile/",
+    "src": ["**/*.js", "!browserify/**/*.js", "!bin/**/*.js", "!node_modules/**/*.js", "!util/**/*.js", "!**/*Tmpl.js"],
+    "dest": "/browserify/"
+}
