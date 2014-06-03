@@ -3,8 +3,13 @@
   "version": "0.0.0",
   "description": "",
   "main": "gulpfile.js",
+   "repository" :
+   {
+       "type" : "git",
+       "url" : "https://github.com/xingyeqishi/glup-and-watchify.git"
+   },
   "dependencies": {
-    "gulp": "~3.6.2",
+    "gulp": "~3.7.0",
     "gulp-watchify": "~0.2.0",
     "gulp-watch": "~0.6.4",
     "gulp-browserify": "^0.5.0",
