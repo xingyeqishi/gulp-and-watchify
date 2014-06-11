@@ -6,6 +6,8 @@ var filter = require('gulp-filter');
 var watch = require('gulp-watch');
 var path = require('path');
 var fs = require('vinyl-fs');
+var tap = require('gulp-tap');
+var handlebars = require('gulp-handlebars');
 
 var conf = require('./config.json');
 
@@ -30,25 +32,60 @@ function isAddedOrChanged(file) {
 }
 // 生成当前已有文件的browserify目标文件
 gulp.task('browserify', function() {
-
     return fs.src(srcArr)
-        .pipe(browserify())
+        .pipe(browserify({debug: true}))
         .pipe(gulp.dest(destDir))
         .on('error', gutil.log);
 });
+// 封装模板目标文件
+var wrapHBS = function(file) {
+    var tmplName = path.basename(file.path, '.js');
+    file.contents = Buffer.concat([
+        new Buffer('(function() {var template = Handlebars.template, templates = Handlebars.templates = Handlebars.templates || {}; templates["' + tmplName  +'"] = template('),
+        file.contents,
+        new Buffer('); })();')
+    ]);
+}
+// 生成目标模板文件
+gulp.task('handlebars', function() {
+    var tmplName;
+    return gulp.src('**/*.handlebars', {cwd: workspace})
+        .pipe(handlebars())
+        .pipe(tap(wrapHBS))
+        .pipe(gulp.dest(workspace))
+        .on('error', gutil.log);
+});
 // 检测文件修改，生成browserify目标文件
-gulp.task('default', ['browserify'], function() {
+gulp.task('default', ['handlebars', 'browserify'], function() {
+    // 监听js文件
     fs.watch(srcArr, function(files) {
         var a = path.relative(cwd, files.path);
         var b = path.relative(workspace, a);
         var c = path.dirname(b);
         if (files.type === 'changed' || files.type === 'added') {
             gulp.src(path.relative(cwd, files.path))
-            .pipe(browserify())
+            .pipe(browserify({debug: true}))
             .pipe(gulp.dest(path.join(destDir, c) ))
             .on('error', gutil.log);
         } else if (files.type === 'deleted') {
             gulp.src(path.join(destDir, b)).pipe(clean({force: true}))
+            .on('error', gutil.log);
+        }
+    });
+    // 监听模板文件
+    fs.watch('**/*.handlebars', {cwd: workspace}, function(files) {
+        var a = path.relative(cwd, files.path);
+        var b = path.relative(workspace, a);
+        var c = path.dirname(b);
+        if (files.type === 'changed' || files.type === 'added') {
+            gulp.src(path.relative(cwd, files.path))
+            .pipe(handlebars())
+            .pipe(tap(wrapHBS))
+            .pipe(gulp.dest(path.join(workspace, c) ))
+            .on('error', gutil.log);
+        } else if (files.type === 'deleted') {
+            var hbsFile = path.join(c, path.basename(b, '.handlebars') + '.js');
+            gulp.src(hbsFile, {cwd: workspace}).pipe(clean({force: true}))
             .on('error', gutil.log);
         }
     });
