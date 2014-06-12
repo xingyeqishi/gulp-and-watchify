@@ -33,7 +33,7 @@ function isAddedOrChanged(file) {
 // 生成当前已有文件的browserify目标文件
 gulp.task('browserify', function() {
     return fs.src(srcArr)
-        .pipe(browserify({debug: true}))
+        .pipe(browserify())
         .pipe(gulp.dest(destDir))
         .on('error', gutil.log);
 });
