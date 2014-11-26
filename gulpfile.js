@@ -1,5 +1,9 @@
 var gulp = require('gulp');
-var browserify = require('gulp-browserify');
+var browserify2 = require('gulp-browserify');
+var browserify = require('browserify');
+var transform = require('vinyl-transform');
+var map = require('map-stream');
+var source = require('vinyl-source-stream');
 var gutil = require('gulp-util');
 var clean = require('gulp-clean');
 var filter = require('gulp-filter');
@@ -30,10 +34,14 @@ var srcArr = conf.src.map(function(item) {
 function isAddedOrChanged(file) {
     return file.event === 'added' || file.event === 'changed';
 }
+var browserified = transform(function(filename) {
+    return browserify(filename).bundle();
+  });
 // 生成当前已有文件的browserify目标文件
 gulp.task('browserify', function() {
     return fs.src(srcArr)
-        .pipe(browserify())
+        .pipe(browserified)
+        .on('error', gutil.log)
         .pipe(gulp.dest(destDir))
         .on('error', gutil.log);
 });
@@ -64,7 +72,8 @@ gulp.task('default', ['handlebars', 'browserify'], function() {
         var c = path.dirname(b);
         if (files.type === 'changed' || files.type === 'added') {
             gulp.src(path.relative(cwd, files.path))
-            .pipe(browserify({debug: true}))
+            .pipe(browserify2({debug: true}))
+            .on('error', gutil.log)
             .pipe(gulp.dest(path.join(destDir, c) ))
             .on('error', gutil.log);
         } else if (files.type === 'deleted') {

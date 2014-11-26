@@ -16,7 +16,11 @@
     "gulp-util": "^2.2.14",
     "gulp-clean": "^0.3.0",
     "gulp-handlebars": "^2.1.0",
-    "gulp-tap": "^0.1.1"
+    "gulp-tap": "^0.1.1",
+    "browserify": "^6.2.0",
+    "vinyl-source-stream": "^1.0.0",
+    "map-stream": "0.0.5",
+    "vinyl-transform": "0.0.1"
   },
   "devDependencies": {},
   "scripts": {
